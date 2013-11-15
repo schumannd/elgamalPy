@@ -1,6 +1,24 @@
-
+#!/usr/bin/python
+from Point import Point
 import sys
 import random
+
+def decryptHomeWork(cypherfile):
+	p = 211287523889848166456771978073530465593093161450010064509303400255860514422619
+	a = 102112374625719848836417645466897582644268266380360636462856219195606277562091
+	cypherArray = []
+	cleartext = ""
+	with open(cypherfile, "r") as textFile:
+		for line in textFile:
+			x = line.split(',')
+			cypherArray.append(Point(int(x[0]),int(x[1])))
+	for cypherPoint in cypherArray:
+		cleartext += chr(decrypt(cypherPoint.x, cypherPoint.y, a, p))
+	print cleartext
+
+def decrypt(c1, c2, a, p):
+	sharedSecret = pow(c1, a, p)
+	return (c2 * modularInverse(sharedSecret, p)) % p
 
 def special_pow( a, b, m):
 	if b == 0:
@@ -54,7 +72,10 @@ def random_generator( p):
 
 
 def main():
-	if len(sys.argv) < 4:
+	if len(sys.argv) == 2:
+		# case specific decryption
+		decryptHomeWork(sys.argv[1])
+	if len(sys.argv) < 5:
 		print "usage: <prime-bit-length> <confidence> <pub-key filename> <sec-key filename>"
 		return
 
@@ -78,6 +99,23 @@ def main():
 
 	pubkeyfile.close()
 	seckeyfile.close()
+
+############# copy pasted from my other projects because lazyness
+def pulverizer(a, b): # a > b
+	x1, y1, x2, y2 = 1, 0, 0, 1
+	while b != 0:
+		q, r = a//b, a%b
+		x, y = x1 - q*x2, y1 - q*y2
+		a, b, x1, y1, x2, y2 = b, r, x2, y2, x, y
+		# print str(q)+", "+str(r)+", "+str(a)+", "+str(b)+", "+str(x1)+", "+str(y1)+", "+str(x2)+", "+str(y2)
+	return a, x1, y1
+
+def modularInverse(e, phi):
+	g, x, y = pulverizer(e, phi)
+	if g != 1:
+		raise Exception('modular inverse does not exist')
+	else:
+		return x % phi
 
 if __name__ == "__main__":
 	main()
